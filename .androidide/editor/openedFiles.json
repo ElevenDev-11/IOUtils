@@ -1,0 +1,20 @@
+{
+  "allFiles": [
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/IO_Utils/app/src/main/java/cn/elevendev/io/IOUtils.java",
+      "selection": {
+        "end": {
+          "column": 7,
+          "index": 3941,
+          "line": 169
+        },
+        "start": {
+          "column": 7,
+          "index": 3941,
+          "line": 169
+        }
+      }
+    }
+  ],
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/IO_Utils/app/src/main/java/cn/elevendev/io/IOUtils.java"
+}
