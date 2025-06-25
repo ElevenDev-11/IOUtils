@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">权限申请</string>
+    <string name="storageDest">尊敬的用户，本软件部分功能使用过程中需要申请【储存权限】后才能够正常运行，权限仅用于更新以及写入必要文件，您可放心授权</string>
+    <string name="close">取消</string>
+    <string name="confirm">授权</string>
+</resources>

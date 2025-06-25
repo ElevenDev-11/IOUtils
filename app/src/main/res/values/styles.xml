@@ -1,0 +1,8 @@
+<resources>
+    <!-- Dialog 主题 -->
+    <style name="DialogTransBgDark" parent="@style/Base.V7.Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.3</item>
+    </style>
+</resources>
