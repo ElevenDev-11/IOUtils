@@ -122,6 +122,7 @@ public class PermissionUtil {
                 } else {
                     requestLegacyPermission(activity);
                 }
+                dialog.dismiss();
             }
         });
     }

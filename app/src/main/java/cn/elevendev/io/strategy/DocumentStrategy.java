@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import cn.elevendev.io.utils.PermissionUtil;
@@ -56,7 +57,6 @@ public class DocumentStrategy implements Strategy {
     }
     
     
-    
     /**
      * 读取文件内容
      *
@@ -67,6 +67,10 @@ public class DocumentStrategy implements Strategy {
     public String readFile(String filePath) {
         if (isType(filePath)) {
             return strategy.readFile(filePath);
+        }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(filePath)) {
+            getDataPermission(activity, filePath);
+            return null;
         }
         
         DocumentFile df = getFile(filePath, false);
@@ -99,6 +103,10 @@ public class DocumentStrategy implements Strategy {
     public byte[] readFileAsBytes(String filePath) {
         if (isType(filePath)) {
             return strategy.readFileAsBytes(filePath);
+        }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(filePath)) {
+            getDataPermission(activity, filePath);
+            return new byte[0];
         }
 
         DocumentFile df = getFile(filePath, false);
@@ -133,6 +141,10 @@ public class DocumentStrategy implements Strategy {
         if (isType(filePath)) {
             return strategy.writeFile(filePath, content);
         }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(filePath)) {
+            getDataPermission(activity, filePath);
+            return false;
+        }
         
         DocumentFile df = getFile(filePath, true);
         if (df != null) {
@@ -162,6 +174,10 @@ public class DocumentStrategy implements Strategy {
     public boolean writeFile(String filePath, byte[] data) {
         if (isType(filePath)) {
             return strategy.writeFile(filePath, data);
+        }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(filePath)) {
+            getDataPermission(activity, filePath);
+            return false;
         }
 
         DocumentFile df = getFile(filePath, true);
@@ -193,6 +209,10 @@ public class DocumentStrategy implements Strategy {
         if (isType(filePath)) {
             return strategy.delete(filePath);
         }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(filePath)) {
+            getDataPermission(activity, filePath);
+            return false;
+        }
         
         DocumentFile df = getFile(filePath, false);
         if (df != null) {
@@ -215,6 +235,10 @@ public class DocumentStrategy implements Strategy {
         if (isType(filePath)) {
           return strategy.exists(filePath); 
         }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(filePath)) {
+            getDataPermission(activity, filePath);
+            return false;
+        }
         
         DocumentFile df = getFile(filePath, false);
         if (df != null) {
@@ -234,6 +258,16 @@ public class DocumentStrategy implements Strategy {
     public boolean copy(String sourcePath, String destPath) {
         if (isType(sourcePath) && isType(destPath)) {
             return strategy.copy(sourcePath, destPath);
+        }
+        if (PermissionUtil.isStoragePermissionGranted(activity)) {
+            if (!isDataPermission(sourcePath)) {
+                getDataPermission(activity, sourcePath);
+                return false;
+            }
+            if (!isDataPermission(destPath)) {
+                getDataPermission(activity, destPath);
+                return false;
+            }
         }
         if (isType(sourcePath)) {
             File file = new File(sourcePath);
@@ -264,6 +298,16 @@ public class DocumentStrategy implements Strategy {
     public boolean move(String sourcePath, String destPath) {
         if (isType(sourcePath) && isType(destPath)) {
             return strategy.copy(sourcePath, destPath);
+        }
+        if (PermissionUtil.isStoragePermissionGranted(activity)) {
+            if (!isDataPermission(sourcePath)) {
+                getDataPermission(activity, sourcePath);
+                return false;
+            }
+            if (!isDataPermission(destPath)) {
+                getDataPermission(activity, destPath);
+                return false;
+            }
         }
         if (isType(sourcePath)) {
             File file = new File(sourcePath);
@@ -296,6 +340,10 @@ public class DocumentStrategy implements Strategy {
                 return strategy.getList(dirPath);
             }
         }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(dirPath)) {
+            getDataPermission(activity, dirPath);
+            return new ArrayList<>();
+        }
         
         List<String> list = new ArrayList<>();
         DocumentFile df = getFile(dirPath, false);
@@ -326,6 +374,10 @@ public class DocumentStrategy implements Strategy {
             if (strategy.exists(dirPath)) {
                 return strategy.getList(dirPath);
             }
+        }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(dirPath)) {
+            getDataPermission(activity, dirPath);
+            return new ArrayList<>();
         }
         
         List<String> list = new ArrayList<>();
@@ -362,6 +414,10 @@ public class DocumentStrategy implements Strategy {
     public boolean createDirectory(String dirPath) {
         if (isType(dirPath)) {
             return strategy.createDirectory(dirPath);
+        }
+        if (PermissionUtil.isStoragePermissionGranted(activity) && !isDataPermission(dirPath)) {
+            getDataPermission(activity, dirPath);
+            return false;
         }
         
         DocumentFile df = getFile(dirPath, false);
@@ -430,24 +486,7 @@ public class DocumentStrategy implements Strategy {
             return;
         }
         
-        String uri;
-        if (dirPath.length() > DIR_AD_LENGTH) {
-            String subPath = dirPath.substring(DIR_AD_LENGTH + 1);
-            if (subPath.contains("/")) {
-                subPath = subPath.substring(0, subPath.indexOf("/"));
-            }
-            if (IS_SDK_32) {
-                uri = ANDROID_DATA + "%2F" + subPath + "/document/primary%3AAndroid%2Fdata%2F" + subPath;
-            } else {
-                uri = ANDROID_DATA + "/document/primary%3AAndroid%2Fdata";
-            }
-        } else {
-            uri = ANDROID_DATA + "/document/primary%3AAndroid%2Fdata";
-        }
-        if (IS_SDK_34) {
-            uri = uri.replace("Android%2Fdata", "Andr%E2%80%8Boid%2Fda%E2%80%8Bta");
-        }
-        getDataPermission(activity, Uri.parse(uri));
+        getDataPermission(activity, dirPath);
     }
     
     /**
@@ -478,13 +517,31 @@ public class DocumentStrategy implements Strategy {
      * @param activity
      * @param uri
      */
-    private void getDataPermission(Activity activity, Uri uri) {
+    private void getDataPermission(Activity activity, String dirPath) {
+        String uri;
+        if (dirPath.length() > DIR_AD_LENGTH) {
+            String subPath = dirPath.substring(DIR_AD_LENGTH + 1);
+            if (subPath.contains("/")) {
+                subPath = subPath.substring(0, subPath.indexOf("/"));
+            }
+            if (IS_SDK_32) {
+                uri = ANDROID_DATA + "%2F" + subPath + "/document/primary%3AAndroid%2Fdata%2F" + subPath;
+            } else {
+                uri = ANDROID_DATA + "/document/primary%3AAndroid%2Fdata";
+            }
+        } else {
+            uri = ANDROID_DATA + "/document/primary%3AAndroid%2Fdata";
+        }
+        if (IS_SDK_34) {
+            uri = uri.replace("Android%2Fdata", "Andr%E2%80%8Boid%2Fda%E2%80%8Bta");
+        }
+        
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
                 | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
-        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uri);
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(uri));
         activity.startActivityForResult(intent, REQUEST_CODE_DOCUMENT);
     }
     
@@ -503,7 +560,13 @@ public class DocumentStrategy implements Strategy {
                     allDeleted = false;
                 }
             } else if (file.isDirectory()) {
-                if (!deleteDir(file.getUri().getPath())) {
+                String childPath = filePath;
+                if (!filePath.endsWith("/")) {
+                    childPath += "/";
+                }
+                childPath += file.getName();
+                
+                if (!deleteDir(childPath)) {
                     allDeleted = false;
                 }
             }
